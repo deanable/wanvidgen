@@ -15,7 +15,7 @@ try:
     HAS_DOTENV = True
 except ImportError:
     HAS_DOTENV = False
-    load_dotenv = lambda: None  # Placeholder function
+    load_dotenv = lambda *args, **kwargs: None  # Placeholder function
 
 # Load environment variables from .env file if it exists
 if HAS_DOTENV:
@@ -42,6 +42,7 @@ class OutputConfig:
     fps: int = 30
     width: int = 1024
     height: int = 576
+    duration: int = 5
     quality: str = "high"  # low, medium, high, ultra
     compression: str = "medium"  # none, low, medium, high
 
@@ -62,7 +63,7 @@ class LoggingConfig:
     """Configuration for logging settings."""
     level: str = "INFO"  # DEBUG, INFO, WARNING, ERROR, CRITICAL
     format: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    file_logging: bool = False
+    file_logging: bool = True
     log_file: str = "./logs/wanvidgen.log"
     console_logging: bool = True
 
@@ -101,6 +102,7 @@ class Config:
         self.output.fps = int(os.getenv("WANVIDGEN_FPS", "30"))
         self.output.width = int(os.getenv("WANVIDGEN_WIDTH", "1024"))
         self.output.height = int(os.getenv("WANVIDGEN_HEIGHT", "576"))
+        self.output.duration = int(os.getenv("WANVIDGEN_DURATION", "5"))
         self.output.quality = os.getenv("WANVIDGEN_QUALITY", "high")
         self.output.compression = os.getenv("WANVIDGEN_COMPRESSION", "medium")
         
@@ -115,7 +117,7 @@ class Config:
         # Logging configuration
         self.logging.level = os.getenv("WANVIDGEN_LOG_LEVEL", "INFO")
         self.logging.format = os.getenv("WANVIDGEN_LOG_FORMAT", "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        self.logging.file_logging = os.getenv("WANVIDGEN_FILE_LOGGING", "false").lower() == "true"
+        self.logging.file_logging = os.getenv("WANVIDGEN_FILE_LOGGING", "true").lower() == "true"
         self.logging.log_file = os.getenv("WANVIDGEN_LOG_FILE", "./logs/wanvidgen.log")
         self.logging.console_logging = os.getenv("WANVIDGEN_CONSOLE_LOGGING", "true").lower() == "true"
         

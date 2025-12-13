@@ -121,6 +121,17 @@ def configure_logging(config: LogConfig | None = None) -> None:
         file_handler.setLevel(config.log_level)
         file_handler.setFormatter(formatter)
         root_logger.addHandler(file_handler)
+        
+        # Create symlink to latest log
+        latest_log = config.log_dir / "latest.log"
+        try:
+            if latest_log.exists() or latest_log.is_symlink():
+                latest_log.unlink()
+            latest_log.symlink_to(log_file.name)
+        except OSError:
+            # Symlinks might not be supported on Windows without admin rights
+            # We skip creating the link in that case
+            pass
     
     _configured = True
     

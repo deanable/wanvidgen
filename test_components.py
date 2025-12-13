@@ -24,14 +24,14 @@ def test_imports():
         return False
     
     try:
-        from wanvidgen.pipeline import GenerationPipeline
-        print("✅ GenerationPipeline import successful")
+        from wanvidgen.pipeline import VideoPipeline
+        print("✅ VideoPipeline import successful")
     except Exception as e:
-        print(f"❌ GenerationPipeline import failed: {e}")
+        print(f"❌ VideoPipeline import failed: {e}")
         return False
     
     try:
-        from wanvidgen.gui.app import WanVidGenGUI, LogPane
+        from wanvidgen.gui import create_gui_manager
         print("✅ GUI components import successful")
     except Exception as e:
         print(f"❌ GUI components import failed: {e}")
@@ -45,32 +45,23 @@ def test_config():
     
     try:
         from wanvidgen.config import Config
-        config = Config("test_config.json")
+        config = Config()
         
         # Test default values
-        assert config.get("steps") == 20
-        assert config.get("fps") == 8
-        assert config.get("resolution") == 512
+        assert config.output.fps == 30
+        assert config.output.width == 1024
         print("✅ Default configuration values correct")
         
         # Test setting values
-        config.set("test_key", "test_value")
-        assert config.get("test_key") == "test_value"
+        config.output.fps = 60
+        assert config.output.fps == 60
         print("✅ Configuration setter/getter works")
         
-        # Test saving and loading
-        config.save()
-        assert Path("test_config.json").exists()
-        print("✅ Configuration save works")
-        
-        # Create new config and load
-        config2 = Config("test_config.json")
-        assert config2.get("test_key") == "test_value"
-        assert config2.get("steps") == 20  # Should have defaults too
-        print("✅ Configuration load works")
-        
-        # Cleanup
-        os.remove("test_config.json")
+        # Test to_dict
+        config_dict = config.to_dict()
+        assert isinstance(config_dict, dict)
+        assert config_dict['output']['fps'] == 60
+        print("✅ Configuration export works")
         
         return True
     except Exception as e:
@@ -82,57 +73,19 @@ def test_pipeline():
     print("\nTesting generation pipeline...")
     
     try:
-        from wanvidgen.pipeline import GenerationPipeline
-        pipeline = GenerationPipeline()
+        from wanvidgen.pipeline import create_default_pipeline
+        from wanvidgen.config import Config
         
-        # Test status
-        status = pipeline.get_status()
-        assert not status['is_generating']
-        assert status['progress'] == 0
-        print("✅ Pipeline status check works")
+        config = Config()
+        pipeline = create_default_pipeline(config.output.__dict__)
         
-        # Test callback tracking
-        progress_updates = []
-        status_updates = []
+        # Test run
+        print("Testing pipeline run...")
+        result = pipeline.run({"prompt": "test prompt"})
         
-        def progress_callback(progress, message):
-            progress_updates.append((progress, message))
-        
-        def status_callback(message):
-            status_updates.append(message)
-        
-        # Test generation with short simulation
-        result = pipeline.generate_video(
-            prompt="test prompt",
-            steps=5,  # Short test
-            fps=8,
-            resolution=512,
-            output_dir="test_output",
-            progress_callback=progress_callback,
-            status_callback=status_callback
-        )
-        
-        assert result != ""
-        assert "test_output" in result
+        assert result["status"] == "success"
+        assert result["prompt"] == "test prompt"
         print("✅ Pipeline generation completes successfully")
-        
-        assert len(progress_updates) > 0
-        assert len(status_updates) > 0
-        print("✅ Pipeline callbacks work correctly")
-        
-        # Test cancellation
-        pipeline.cancel_generation()
-        print("✅ Pipeline cancellation works")
-        
-        # Cleanup
-        try:
-            if os.path.exists(result):
-                os.remove(result)
-            if os.path.exists("test_output"):
-                import shutil
-                shutil.rmtree("test_output")  # Use shutil to remove non-empty directory
-        except Exception as e:
-            print(f"Warning: Cleanup failed: {e}")
             
         return True
     except Exception as e:
@@ -148,10 +101,11 @@ def test_gui_creation():
     try:
         # Test without actually showing the window
         from wanvidgen.config import Config
-        from wanvidgen.pipeline import GenerationPipeline
+        from wanvidgen.pipeline import create_default_pipeline
+        from wanvidgen.gui import create_gui_manager
         
         config = Config()
-        pipeline = GenerationPipeline()
+        pipeline = create_default_pipeline(config.output.__dict__)
         
         print("✅ Config and pipeline created for GUI")
         
@@ -163,8 +117,10 @@ def test_gui_creation():
             print("⚠️  CustomTkinter not installed - GUI testing limited")
             print("   Install with: pip install customtkinter")
         
-        # We can't easily test the full GUI without a display,
-        # but we can verify the classes can be imported and basic setup works
+        # Create manager
+        gui_manager = create_gui_manager(config, pipeline, None)
+        assert gui_manager is not None
+        print("✅ GUI Manager created successfully")
         
         return True
     except Exception as e:

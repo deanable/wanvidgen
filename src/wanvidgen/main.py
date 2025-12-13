@@ -11,9 +11,15 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+# Allow running directly by setting up package context
+if __name__ == "__main__" and __package__ is None:
+    file = Path(__file__).resolve()
+    sys.path.insert(0, str(file.parents[1]))
+    __package__ = "wanvidgen"
+
 from .config import Config, load_config
-from .utils import get_system_info, check_dependencies
-from .log_config import configure_logging, LogConfig
+from .utils import get_system_info, check_dependencies, ensure_model_availability
+from .logging import configure_logging, LogConfig
 from .gui import create_gui_manager
 from .pipeline import create_default_pipeline
 from .outputs import create_output_manager
@@ -156,6 +162,17 @@ def generate_video(prompt: str, config: Config, output_name: Optional[str] = Non
                 "result": result,
             }
             
+            # Save video if frames are present
+            if "frames" in result:
+                from .output.handlers import save_generation
+                saved_files = save_generation(
+                    frames=result["frames"],
+                    metadata=metadata,
+                    output_dir=Path(config.output.output_dir) / f"gen_{int(time.time())}",
+                    fps=config.output.fps
+                )
+                print(f"✓ Video saved to: {saved_files.get('mp4', saved_files.get('png'))}")
+            
             output_info = output_manager.save_json(metadata, f"{output_name or 'generation'}.json", metadata)
             print(f"✓ Generation completed in {generation_time:.2f} seconds")
             print(f"Output saved to: {output_info['filepath']}")
@@ -255,6 +272,11 @@ def main() -> int:
         logger.info(f"Version: 0.1.0")
         logger.info(f"Python version: {sys.version}")
         
+        # Check for model availability on startup
+        if not args.check_system:  # Don't download if just checking system
+            if not ensure_model_availability(config):
+                logger.warning("Model check failed or model not found. Some features may not work.")
+
         # Handle different operation modes
         success = True
         if args.check_system:

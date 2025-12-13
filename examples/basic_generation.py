@@ -1,4 +1,4 @@
-"""Basic example of using the GenerationPipeline."""
+"""Basic example of using the VideoPipeline."""
 
 import sys
 from pathlib import Path
@@ -6,60 +6,40 @@ from pathlib import Path
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from wanvidgen.pipeline import GenerationPipeline, GenerationConfig
+from wanvidgen.pipeline import create_default_pipeline
+from wanvidgen.config import Config
 
 
 def main():
     """Example of basic pipeline usage."""
-    # Note: This example assumes model weights are available at these paths.
-    # For testing without real models, use the test suite instead.
     
-    clip_model_path = Path("./models/clip.gguf")
-    vae_model_path = Path("./models/vae.gguf")
-    unet_model_path = Path("./models/unet.gguf")
-
-    try:
-        # Initialize pipeline
-        pipeline = GenerationPipeline(
-            clip_config_path=clip_model_path,
-            vae_config_path=vae_model_path,
-            unet_config_path=unet_model_path,
-            device="cuda",
-            clip_quantization="q5",
-            vae_quantization="q5",
-            unet_quantization="q6",
-        )
-
-        # Use context manager for automatic model loading/unloading
-        with pipeline:
-            # Configure generation
-            config = GenerationConfig(
-                prompt="A beautiful landscape at sunset",
-                negative_prompt="blurry, low quality",
-                height=512,
-                width=512,
-                num_inference_steps=50,
-                sampler="ddim",
-                scheduler="linear",
-                seed=42,
-                fps=8,
-                clip_guidance_scale=7.5,
-            )
-
-            # Generate video
-            result = pipeline.generate(config)
-
-            print(f"Generated {result.get_frame_count()} frames")
-            print(f"Frame dimensions: {result.metadata['height']}x{result.metadata['width']}")
-            print(f"FPS: {result.get_fps()}")
-            print(f"Generation completed successfully!")
-
-    except FileNotFoundError:
-        print(f"Model files not found. Expected paths:")
-        print(f"  - {clip_model_path}")
-        print(f"  - {vae_model_path}")
-        print(f"  - {unet_model_path}")
-        print(f"\nFor testing without models, use the test suite.")
+    # Initialize configuration
+    config = Config()
+    
+    # Configure settings
+    config.model.device = "cuda"
+    config.model.precision = "Q5"
+    
+    config.output.width = 512
+    config.output.height = 512
+    config.output.fps = 8
+    
+    print("Initializing pipeline...")
+    
+    # Create pipeline
+    pipeline = create_default_pipeline(config.output.__dict__)
+    
+    prompt = "A beautiful landscape at sunset"
+    print(f"Generating video for prompt: '{prompt}'")
+    
+    # Run generation
+    result = pipeline.run({"prompt": prompt})
+    
+    if result.get("status") == "success":
+        print("Generation completed successfully!")
+        print(f"Result: {result}")
+    else:
+        print(f"Generation failed: {result.get('error')}")
         return 1
 
     return 0

@@ -83,9 +83,26 @@ class OutputManager:
         return self.outputs.copy()
     
     def cleanup_old_outputs(self, days: int = 30) -> int:
-        """Clean up old outputs (placeholder)."""
-        logger.info(f"Cleaning up outputs older than {days} days (placeholder)")
-        return 0
+        """Clean up old outputs."""
+        import time
+        logger.info(f"Cleaning up outputs older than {days} days")
+        count = 0
+        now = time.time()
+        cutoff = now - (days * 86400)
+        
+        for item in self.output_dir.glob("*"):
+            if item.is_file() and item.stat().st_mtime < cutoff:
+                try:
+                    item.unlink()
+                    count += 1
+                    logger.debug(f"Deleted old output: {item}")
+                except Exception as e:
+                    logger.warning(f"Failed to delete {item}: {e}")
+        
+        if count > 0:
+            logger.info(f"Cleaned up {count} old output files")
+            
+        return count
 
 
 def create_output_manager(output_dir: Union[str, Path] = "./outputs") -> OutputManager:
