@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from wanvidgen.logging import configure_logging, get_logger, LogConfig
+from wanvidgen.log_config import configure_logging, get_logger, LogConfig
 
 # Test custom log directory
 custom_log_dir = Path("custom_logs")

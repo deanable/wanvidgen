@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from wanvidgen.logging import configure_logging, get_logger, LogConfig
+from wanvidgen.log_config import configure_logging, get_logger, LogConfig
 
 # Configure with key-value format
 configure_logging(LogConfig(

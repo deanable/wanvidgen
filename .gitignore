@@ -141,3 +141,9 @@ Thumbs.db
 
 # Local config
 config.local.yaml
+
+# Application logs and test outputs
+logs/
+custom_logs/
+test_outputs/
+outputs/

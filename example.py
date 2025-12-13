@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Example usage of wanvidgen logging and output handlers."""
+"""Example usage of wanvidgen log_config and output handlers."""
 
 import sys
 from pathlib import Path
@@ -8,7 +8,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-from wanvidgen.logging import configure_logging, get_logger, LogConfig
+from wanvidgen.log_config import configure_logging, get_logger, LogConfig
 from wanvidgen.output import save_generation
 
 
