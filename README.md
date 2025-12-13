@@ -1,197 +1,248 @@
 # WanVidGen
 
-A CustomTkinter GUI application for video generation with real-time progress monitoring and comprehensive logging.
+WanVidGen is a modern video generation application built with PyTorch and CustomTkinter, designed to work with GGUF quantized models for efficient video generation.
 
 ## Features
 
-- **Modern GUI**: Built with CustomTkinter for a clean, modern interface
-- **Real-time Progress**: Progress bars and status updates during generation
-- **Comprehensive Logging**: Live console with color-coded log messages
-- **Flexible Configuration**: Save/load settings, customizable parameters
-- **Threaded Generation**: Non-blocking UI during video generation
-- **Error Handling**: User-friendly error dialogs and comprehensive logging
-- **GPU Memory Management**: Option to clear GPU memory between runs
+- **GGUF Model Support**: Compatible with GGUF quantized models for memory-efficient inference
+- **Modern GUI**: Clean, intuitive interface built with CustomTkinter
+- **Flexible Configuration**: Comprehensive environment variable configuration
+- **Multiple Device Support**: CPU, CUDA (NVIDIA GPU), and MPS (Apple Silicon)
+- **Video Pipeline**: Modular pipeline for text-to-video generation
+- **Output Management**: Organized output saving with metadata tracking
 
 ## Installation
 
 ### Prerequisites
 
 - Python 3.8 or higher
-- pip (Python package installer)
+- PyTorch 2.0.0 or higher
+- CUDA-compatible GPU (optional, for GPU acceleration)
 
 ### Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### Install WanVidGen (Development Mode)
 
 ```bash
 pip install -e .
 ```
 
-This installs the package in development mode, allowing you to run it directly.
-
-## Usage
-
-### Command Line
-
-Run the application using the command line:
+Or install with development dependencies:
 
 ```bash
-python -m wanvidgen
+pip install -e ".[dev]"
 ```
 
-Or after installation:
+### Environment Setup
+
+1. Copy the example environment file:
+```bash
+cp .env.example .env
+```
+
+2. Edit `.env` to configure your settings:
+- Set model path and name
+- Configure device and precision settings
+- Adjust video output parameters
+- Customize logging and performance settings
+
+## Quick Start
+
+### Run the Application
+
+The application can be started in several ways:
+
+#### GUI Mode (Recommended)
+```bash
+python -m wanvidgen --gui
+```
+
+#### Command Line Generation
+```bash
+python -m wanvidgen --generate "A sunset over mountains"
+```
+
+#### Check System Compatibility
+```bash
+python -m wanvidgen --check-system
+```
+
+#### List Models
+```bash
+python -m wanvidgen --list-models
+```
+
+### Command Line Options
 
 ```bash
-wanvidgen
+# Full command line reference
+python -m wanvidgen --help
+
+# Generate video with custom settings
+python -m wanvidgen --generate "Your prompt here" \
+    --model-path ./models/your_model.gguf \
+    --device cuda \
+    --precision Q5 \
+    --output-dir ./my_outputs \
+    --width 1024 --height 576 --fps 30
+
+# Start GUI with custom config
+python -m wanvidgen --gui --config custom_config.yaml
 ```
 
-### Running from Source
+## Configuration
 
-```bash
-python wanvidgen/main.py
+### Environment Variables
+
+The application uses environment variables for configuration. Key categories:
+
+#### Model Configuration
+- `WANVIDGEN_MODEL_PATH`: Path to model file
+- `WANVIDGEN_MODEL_NAME`: Model identifier
+- `WANVIDGEN_PRECISION`: Model precision (Q5, Q6, FP16, FP32)
+- `WANVIDGEN_DEVICE`: Compute device (auto, cpu, cuda, mps)
+- `WANVIDGEN_GPU_ID`: Specific GPU device ID
+
+#### Video Output
+- `WANVIDGEN_OUTPUT_DIR`: Output directory
+- `WANVIDGEN_WIDTH`/`WANVIDGEN_HEIGHT`: Video dimensions
+- `WANVIDGEN_FPS`: Frames per second
+- `WANVIDGEN_QUALITY`: Quality preset (low, medium, high, ultra)
+
+#### Performance
+- `WANVIDGEN_BATCH_SIZE`: Inference batch size
+- `WANVIDGEN_NUM_WORKERS`: Data loading workers
+- `WANVIDGEN_PIN_MEMORY`: GPU memory optimization
+
+See `.env.example` for complete documentation.
+
+### Configuration File
+
+You can also use YAML configuration files:
+
+```yaml
+model:
+  model_path: "./models/wan2.1.gguf"
+  precision: "Q5"
+  device: "auto"
+
+output:
+  width: 1024
+  height: 576
+  fps: 30
+  quality: "high"
+
+pipeline:
+  batch_size: 1
+  num_workers: 4
 ```
 
-### GUI Application
+## Project Structure
 
-The application opens with a modern dark-themed interface containing:
-
-1. **Generation Tab**: Main interface for configuring and running video generation
-2. **Settings Tab**: Appearance and configuration management
-3. **Console Tab**: Real-time log output and console
-
-### Configuration Options
-
-#### Generation Parameters
-- **Prompt**: Text description for video generation
-- **Negative Prompt**: What to avoid in generation
-- **Sampler**: Algorithm for sampling (euler_ancestral, lms, heun, etc.)
-- **Scheduler**: Step scheduling method (simple, karras, normalized)
-- **Quantization**: Model quantization level (q5, q6)
-- **Steps**: Number of generation steps (10-50)
-- **FPS**: Frames per second (4-24)
-- **Resolution**: Output resolution (512, 768, 1024)
-- **Output Directory**: Where to save generated videos
-
-#### GUI Settings
-- **Theme**: Dark or light appearance
-- **Window Size**: Configurable window dimensions
-
-## Architecture
-
-### Core Components
-
-1. **Main Application** (`wanvidgen/main.py`): Entry point, logging, error handling
-2. **GUI Application** (`wanvidgen/gui/app.py`): CustomTkinter interface, event handling
-3. **Generation Pipeline** (`wanvidgen/pipeline/pipeline.py`): Core generation logic
-4. **Configuration Manager** (`wanvidgen/config/config.py`): Settings persistence
-
-### Key Features Implementation
-
-- **Threading**: Generation runs in separate thread to keep UI responsive
-- **Progress Callbacks**: Real-time progress updates via queue-based communication
-- **Error Handling**: Comprehensive exception handling with user-friendly messages
-- **Logging**: Dual logging to file and console with configurable levels
-- **Configuration**: JSON-based settings with defaults and validation
+```
+src/wanvidgen/
+├── __init__.py          # Package initialization
+├── __main__.py          # Module entry point
+├── config.py            # Configuration management
+├── models.py            # Model loading and management
+├── pipeline.py          # Video generation pipeline
+├── outputs.py           # Output file management
+├── utils.py             # Utility functions
+├── gui.py               # Graphical user interface
+└── main.py              # Main application logic
+```
 
 ## Development
 
-### Project Structure
-
-```
-wanvidgen/
-├── __init__.py
-├── __main__.py
-├── main.py                 # Entry point
-├── gui/
-│   ├── __init__.py
-│   └── app.py             # Main GUI application
-├── pipeline/
-│   ├── __init__.py
-│   └── pipeline.py        # Generation pipeline
-└── config/
-    ├── __init__.py
-    └── config.py          # Configuration management
-```
-
-### Adding New Features
-
-1. **New Parameters**: Add to `config.py` defaults and update GUI form in `app.py`
-2. **Pipeline Changes**: Modify `pipeline.py` generation logic
-3. **UI Enhancements**: Extend `app.py` GUI components and event handlers
-
 ### Running Tests
-
 ```bash
-python -m pytest tests/
+pytest tests/
 ```
 
-### Code Style
+### Code Formatting
+```bash
+black src/
+isort src/
+```
 
-- Follow PEP 8 Python style guidelines
-- Use type hints for function parameters and return values
-- Document all public methods and classes
-- Add comprehensive error handling
+### Type Checking
+```bash
+mypy src/
+```
 
-## Current Status
+## Model Support
 
-This is a **simulation/stub implementation** that demonstrates the GUI structure and user interface workflow. The generation pipeline currently simulates video generation with progress updates rather than performing actual video generation.
+### Supported Formats
+- **GGUF**: Quantized models (Q4, Q5, Q6, Q8)
+- **PyTorch**: Standard PyTorch models (.bin, .safetensors)
+- **ONNX**: Open Neural Network Exchange format (planned)
 
-### What Works
+### Recommended Models
+- Wan2.1 GGUF quantized models for memory efficiency
+- Models with video generation capabilities
+- Models supporting text-to-video or image-to-video tasks
 
-- ✅ CustomTkinter GUI with tabbed interface
-- ✅ Form fields for all generation parameters
-- ✅ Real-time progress bars and status updates
-- ✅ Live console logging with color coding
-- ✅ Configuration save/load functionality
-- ✅ Threaded generation with cancel support
-- ✅ Error dialogs and exception handling
-- ✅ Menu system with file operations
-- ✅ GPU memory clearing simulation
-- ✅ Output path display and file creation
+## GPU Support
 
-### Next Steps (Future Development)
+### NVIDIA CUDA
+- Requires CUDA-compatible GPU
+- Install CUDA toolkit
+- Set `WANVIDGEN_DEVICE=cuda`
 
-- 🔄 Integrate actual video generation models
-- 🔄 Add video preview and playback
-- 🔄 Implement batch processing
-- 🔄 Add preset configurations
-- 🔄 Include model downloading and management
-- 🔄 Add support for custom model paths
+### Apple Silicon (MPS)
+- Requires Apple Silicon Mac
+- Set `WANVIDGEN_DEVICE=mps`
 
-## Dependencies
+### CPU
+- Works on all systems
+- Slower but universal
+- Set `WANVIDGEN_DEVICE=cpu`
 
-### Core Dependencies
-- **customtkinter**: ModernTkinter widgets with styling
-- **Pillow**: Image processing capabilities
+## Troubleshooting
 
-### Optional Dependencies (Future)
-- **torch**: Deep learning framework for models
-- **diffusers**: Hugging Face diffusion models
-- **transformers**: Transformer models for NLP
-- **torchvision**: Computer vision utilities
+### Common Issues
+
+#### Model Loading Failures
+- Verify model file exists and is readable
+- Check model format compatibility
+- Ensure sufficient RAM for model size
+
+#### GPU Memory Errors
+- Reduce batch size (`WANVIDGEN_BATCH_SIZE=1`)
+- Use quantized models (Q5, Q6)
+- Close other GPU-intensive applications
+
+#### GUI Not Starting
+- Ensure CustomTkinter is installed
+- Check display environment (for headless systems)
+- Use command-line mode as fallback
+
+#### Poor Performance
+- Use GPU acceleration when available
+- Adjust batch size and worker count
+- Consider model quantization for memory efficiency
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Run linting and type checking
+6. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- **CustomTkinter**: For the modern, customizable GUI framework
-- **Python Community**: For the excellent ecosystem of libraries
-- **Tkinter**: For the underlying GUI toolkit
+MIT License - see LICENSE file for details.
 
 ## Support
 
-For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/your-org/wanvidgen) or open an issue.
+- GitHub Issues: Report bugs and feature requests
+- Documentation: See inline code documentation
+- Discussions: Community support and questions
+
+## Version History
+
+- **0.1.0**: Initial release with basic functionality
+  - GGUF model support
+  - GUI and CLI interfaces
+  - Basic video generation pipeline
+  - Configuration management
