@@ -1,233 +1,248 @@
-# WanVidGen - Video Generation Pipeline
+# WanVidGen
 
-A modular video generation pipeline with support for CLIP, VAE, and UNet models with GGUF quantization support (Q5/Q6).
+WanVidGen is a modern video generation application built with PyTorch and CustomTkinter, designed to work with GGUF quantized models for efficient video generation.
 
 ## Features
 
-- **Model Managers**: Specialized managers for CLIP, VAE, and UNet models
-  - Support for GGUF format weights
-  - Q5 and Q6 quantization support
-  - Lifecycle management (load/unload)
-  - GPU device placement
-
-- **Generation Pipeline**: Orchestrates model inference for video generation
-  - Synchronous and asynchronous APIs
-  - Full parameter preservation (prompt, negative prompt, resolution, steps, sampler, scheduler, seed, fps, clip guidance, etc.)
-  - Frame sequence generation with metadata
-
-- **Memory Management**: GPU memory utilities
-  - Memory availability checking before operations
-  - Automatic memory cleanup
-  - OOM prevention with user-friendly error messages
-
-- **Structured Exceptions**: User-friendly error handling
-  - Separate technical and user-facing messages
-  - GUI-ready error information
-
-## Project Structure
-
-```
-src/wanvidgen/
-├── __init__.py
-├── exceptions.py          # Exception classes
-├── memory.py              # GPU memory management
-├── pipeline.py            # Main generation pipeline
-└── models/
-    ├── __init__.py
-    ├── base_manager.py    # Base model manager
-    ├── clip_manager.py    # CLIP model manager
-    ├── vae_manager.py     # VAE model manager
-    └── unet_manager.py    # UNet model manager
-
-tests/
-├── test_pipeline.py       # Pipeline tests
-├── test_models.py         # Model manager tests
-├── test_memory.py         # Memory management tests
-└── test_exceptions.py     # Exception tests
-
-examples/
-└── basic_generation.py    # Basic usage example
-```
+- **GGUF Model Support**: Compatible with GGUF quantized models for memory-efficient inference
+- **Modern GUI**: Clean, intuitive interface built with CustomTkinter
+- **Flexible Configuration**: Comprehensive environment variable configuration
+- **Multiple Device Support**: CPU, CUDA (NVIDIA GPU), and MPS (Apple Silicon)
+- **Video Pipeline**: Modular pipeline for text-to-video generation
+- **Output Management**: Organized output saving with metadata tracking
 
 ## Installation
+
+### Prerequisites
+
+- Python 3.8 or higher
+- PyTorch 2.0.0 or higher
+- CUDA-compatible GPU (optional, for GPU acceleration)
+
+### Install Dependencies
 
 ```bash
 pip install -e .
 ```
 
-## Usage
+Or install with development dependencies:
 
-### Basic Example
-
-```python
-from wanvidgen.pipeline import GenerationPipeline, GenerationConfig
-
-# Initialize pipeline
-pipeline = GenerationPipeline(
-    clip_config_path="./models/clip.gguf",
-    vae_config_path="./models/vae.gguf",
-    unet_config_path="./models/unet.gguf",
-    device="cuda",
-    clip_quantization="q5",
-    vae_quantization="q5",
-    unet_quantization="q6",
-)
-
-# Use context manager for automatic model loading/unloading
-with pipeline:
-    config = GenerationConfig(
-        prompt="A beautiful landscape at sunset",
-        negative_prompt="blurry, low quality",
-        height=512,
-        width=512,
-        num_inference_steps=50,
-        sampler="ddim",
-        scheduler="linear",
-        seed=42,
-        fps=8,
-        clip_guidance_scale=7.5,
-    )
-    
-    result = pipeline.generate(config)
-    
-    print(f"Generated {result.get_frame_count()} frames")
-    print(f"FPS: {result.get_fps()}")
+```bash
+pip install -e ".[dev]"
 ```
 
-### Asynchronous Generation
+### Environment Setup
 
-```python
-import asyncio
-
-async def generate_async():
-    async with pipeline:
-        result = await pipeline.generate_async(config)
-        return result
-
-# Run async generation
-result = asyncio.run(generate_async())
+1. Copy the example environment file:
+```bash
+cp .env.example .env
 ```
 
-### Manual Model Management
+2. Edit `.env` to configure your settings:
+- Set model path and name
+- Configure device and precision settings
+- Adjust video output parameters
+- Customize logging and performance settings
 
-```python
-# Load models explicitly
-pipeline = GenerationPipeline(...)
-pipeline.load()
+## Quick Start
 
-try:
-    result = pipeline.generate(config)
-finally:
-    pipeline.unload()
+### Run the Application
+
+The application can be started in several ways:
+
+#### GUI Mode (Recommended)
+```bash
+python -m wanvidgen --gui
 ```
 
-## API Reference
+#### Command Line Generation
+```bash
+python -m wanvidgen --generate "A sunset over mountains"
+```
 
-### GenerationPipeline
+#### Check System Compatibility
+```bash
+python -m wanvidgen --check-system
+```
 
-Main class for orchestrating video generation.
+#### List Models
+```bash
+python -m wanvidgen --list-models
+```
 
-#### Methods
+### Command Line Options
 
-- `load()`: Load all models
-- `unload()`: Unload all models and free memory
-- `is_loaded()`: Check if models are loaded
-- `generate(config)`: Generate video synchronously
-- `generate_async(config)`: Generate video asynchronously
+```bash
+# Full command line reference
+python -m wanvidgen --help
 
-### GenerationConfig
+# Generate video with custom settings
+python -m wanvidgen --generate "Your prompt here" \
+    --model-path ./models/your_model.gguf \
+    --device cuda \
+    --precision Q5 \
+    --output-dir ./my_outputs \
+    --width 1024 --height 576 --fps 30
 
-Configuration for generation parameters.
+# Start GUI with custom config
+python -m wanvidgen --gui --config custom_config.yaml
+```
 
-#### Fields
+## Configuration
 
-- `prompt`: Main generation prompt
-- `negative_prompt`: Negative prompt (default: "")
-- `height`: Output height in pixels (default: 512)
-- `width`: Output width in pixels (default: 512)
-- `num_inference_steps`: Number of diffusion steps (default: 50)
-- `sampler`: Sampling method (default: "ddim")
-- `scheduler`: Noise scheduler (default: "linear")
-- `seed`: Random seed (default: 42)
-- `fps`: Frames per second (default: 8)
-- `clip_guidance_scale`: CLIP guidance strength (default: 7.5)
-- `extra_params`: Additional parameters (default: {})
+### Environment Variables
 
-### Model Managers
+The application uses environment variables for configuration. Key categories:
 
-#### CLIPManager
+#### Model Configuration
+- `WANVIDGEN_MODEL_PATH`: Path to model file
+- `WANVIDGEN_MODEL_NAME`: Model identifier
+- `WANVIDGEN_PRECISION`: Model precision (Q5, Q6, FP16, FP32)
+- `WANVIDGEN_DEVICE`: Compute device (auto, cpu, cuda, mps)
+- `WANVIDGEN_GPU_ID`: Specific GPU device ID
 
-Text encoding model manager.
+#### Video Output
+- `WANVIDGEN_OUTPUT_DIR`: Output directory
+- `WANVIDGEN_WIDTH`/`WANVIDGEN_HEIGHT`: Video dimensions
+- `WANVIDGEN_FPS`: Frames per second
+- `WANVIDGEN_QUALITY`: Quality preset (low, medium, high, ultra)
 
-- `load()`: Load CLIP model
-- `unload()`: Unload CLIP model
-- `encode_text(text)`: Encode text to embeddings
+#### Performance
+- `WANVIDGEN_BATCH_SIZE`: Inference batch size
+- `WANVIDGEN_NUM_WORKERS`: Data loading workers
+- `WANVIDGEN_PIN_MEMORY`: GPU memory optimization
 
-#### VAEManager
+See `.env.example` for complete documentation.
 
-Latent space encoding/decoding model manager.
+### Configuration File
 
-- `load()`: Load VAE model
-- `unload()`: Unload VAE model
-- `encode(image)`: Encode image to latent
-- `decode(latent)`: Decode latent to image
+You can also use YAML configuration files:
 
-#### UNetManager
+```yaml
+model:
+  model_path: "./models/wan2.1.gguf"
+  precision: "Q5"
+  device: "auto"
 
-Diffusion denoising model manager.
+output:
+  width: 1024
+  height: 576
+  fps: 30
+  quality: "high"
 
-- `load()`: Load UNet model
-- `unload()`: Unload UNet model
-- `denoise(latent, timestep, encoder_hidden_states, guidance_scale)`: Run denoising step
-- `forward(sample, timestep, encoder_hidden_states)`: Forward pass
+pipeline:
+  batch_size: 1
+  num_workers: 4
+```
 
-### Memory Management
+## Project Structure
 
-#### MemoryManager
+```
+src/wanvidgen/
+├── __init__.py          # Package initialization
+├── __main__.py          # Module entry point
+├── config.py            # Configuration management
+├── models.py            # Model loading and management
+├── pipeline.py          # Video generation pipeline
+├── outputs.py           # Output file management
+├── utils.py             # Utility functions
+├── gui.py               # Graphical user interface
+└── main.py              # Main application logic
+```
 
-GPU memory management utilities.
+## Development
 
-- `get_free_gpu_memory_mb()`: Get available GPU memory
-- `check_available_memory(required_mb)`: Check if memory available
-- `assert_memory_available(required_mb, operation_name)`: Assert with error
-- `free_memory()`: Free GPU memory
-- `get_memory_stats()`: Get memory statistics
-
-### Exceptions
-
-- `WanVidGenException`: Base exception
-- `ModelLoadError`: Model loading failure
-- `ConfigError`: Configuration error
-- `GPUMemoryError`: Insufficient GPU memory
-- `PipelineError`: Pipeline-related errors
-- `GenerationError`: Generation-related errors
-
-## Testing
-
-Run the test suite:
-
+### Running Tests
 ```bash
 pytest tests/
 ```
 
-Run specific test file:
-
+### Code Formatting
 ```bash
-pytest tests/test_pipeline.py -v
+black src/
+isort src/
 ```
 
-Run with coverage:
-
+### Type Checking
 ```bash
-pytest tests/ --cov=src/wanvidgen --cov-report=html
+mypy src/
 ```
 
-## Requirements
+## Model Support
 
-- Python >= 3.8
-- PyTorch >= 1.9
-- numpy
+### Supported Formats
+- **GGUF**: Quantized models (Q4, Q5, Q6, Q8)
+- **PyTorch**: Standard PyTorch models (.bin, .safetensors)
+- **ONNX**: Open Neural Network Exchange format (planned)
+
+### Recommended Models
+- Wan2.1 GGUF quantized models for memory efficiency
+- Models with video generation capabilities
+- Models supporting text-to-video or image-to-video tasks
+
+## GPU Support
+
+### NVIDIA CUDA
+- Requires CUDA-compatible GPU
+- Install CUDA toolkit
+- Set `WANVIDGEN_DEVICE=cuda`
+
+### Apple Silicon (MPS)
+- Requires Apple Silicon Mac
+- Set `WANVIDGEN_DEVICE=mps`
+
+### CPU
+- Works on all systems
+- Slower but universal
+- Set `WANVIDGEN_DEVICE=cpu`
+
+## Troubleshooting
+
+### Common Issues
+
+#### Model Loading Failures
+- Verify model file exists and is readable
+- Check model format compatibility
+- Ensure sufficient RAM for model size
+
+#### GPU Memory Errors
+- Reduce batch size (`WANVIDGEN_BATCH_SIZE=1`)
+- Use quantized models (Q5, Q6)
+- Close other GPU-intensive applications
+
+#### GUI Not Starting
+- Ensure CustomTkinter is installed
+- Check display environment (for headless systems)
+- Use command-line mode as fallback
+
+#### Poor Performance
+- Use GPU acceleration when available
+- Adjust batch size and worker count
+- Consider model quantization for memory efficiency
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Run linting and type checking
+6. Submit a pull request
 
 ## License
 
-MIT
+MIT License - see LICENSE file for details.
+
+## Support
+
+- GitHub Issues: Report bugs and feature requests
+- Documentation: See inline code documentation
+- Discussions: Community support and questions
+
+## Version History
+
+- **0.1.0**: Initial release with basic functionality
+  - GGUF model support
+  - GUI and CLI interfaces
+  - Basic video generation pipeline
+  - Configuration management
