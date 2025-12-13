@@ -11,11 +11,9 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-# Add src to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
 from .config import Config, load_config
-from .utils import get_system_info
+from .utils import get_system_info, check_dependencies
+from .logging import configure_logging, LogConfig
 from .gui import create_gui_manager
 from .pipeline import create_default_pipeline
 from .outputs import create_output_manager
@@ -39,7 +37,7 @@ Examples:
     )
     
     # Main operation modes
-    mode_group = parser.add_mutually_exclusive_group(required=True)
+    mode_group = parser.add_mutually_exclusive_group(required=False)
     mode_group.add_argument("--gui", action="store_true",
                           help="Start the graphical user interface")
     mode_group.add_argument("--generate", type=str,
@@ -95,7 +93,6 @@ def check_system_compatibility() -> bool:
         print(f"  {key}: {value}")
     
     print("\nDependency Check:")
-    from .utils import check_dependencies
     dependencies = check_dependencies()
     
     all_good = True
@@ -236,7 +233,7 @@ def update_config_from_args(config: Config, args: argparse.Namespace) -> Config:
     return config
 
 
-def main():
+def main() -> int:
     """Main entry point."""
     parser = setup_arg_parser()
     args = parser.parse_args()
@@ -247,37 +244,39 @@ def main():
         config = update_config_from_args(config, args)
         
         # Setup logging
-        setup_logging(config.logging.__dict__)
+        log_config = LogConfig(
+            log_level=config.logging.level,
+            console_output=config.logging.console_logging,
+            file_output=config.logging.file_logging,
+        )
+        configure_logging(log_config)
         
         logger.info("WanVidGen starting...")
         logger.info(f"Version: 0.1.0")
         logger.info(f"Python version: {sys.version}")
         
         # Handle different operation modes
+        success = True
         if args.check_system:
-            return check_system_compatibility()
-        
-        if args.generate:
-            return generate_video(args.generate, config, None)
-        
-        if args.gui:
-            return start_gui(config)
-        
-        # If no mode specified, show help
-        parser.print_help()
-        return True
+            success = check_system_compatibility()
+        elif args.generate:
+            success = generate_video(args.generate, config, None)
+        elif args.gui:
+            success = start_gui(config)
+        else:
+            # If no mode specified, show help
+            parser.print_help()
+            return 0
+            
+        return 0 if success else 1
         
     except KeyboardInterrupt:
         print("\nOperation cancelled by user")
-        return False
+        return 130
     except Exception as e:
         logger.error(f"Application error: {e}")
         print(f"✗ Application error: {e}")
         if args.debug:
             import traceback
             traceback.print_exc()
-        return False
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+        return 1
