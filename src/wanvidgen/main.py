@@ -15,7 +15,7 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from .config import Config, load_config
-from .utils import setup_logging, get_system_info
+from .utils import get_system_info
 from .gui import create_gui_manager
 from .pipeline import create_default_pipeline
 from .outputs import create_output_manager
