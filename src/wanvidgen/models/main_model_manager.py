@@ -1,18 +1,17 @@
 """
-Model management for WanVidGen.
+Model manager compatible with main.py interface.
 
-Placeholder module for model loading and management.
-Supports GGUF quantized models and other formats.
+Simple model manager that implements the interface expected by main.py.
 """
 
-from typing import Optional, Dict, Any, List
+from typing import Dict, Any, Optional
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class ModelManager:
-    """Placeholder model manager."""
+    """Simple model manager compatible with main.py interface."""
     
     def __init__(self, config: Dict[str, Any]):
         self.config = config
