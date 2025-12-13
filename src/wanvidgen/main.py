@@ -13,7 +13,7 @@ from typing import Optional
 
 from .config import Config, load_config
 from .utils import get_system_info, check_dependencies
-from .logging import configure_logging, LogConfig
+from .log_config import configure_logging, LogConfig
 from .gui import create_gui_manager
 from .pipeline import create_default_pipeline
 from .outputs import create_output_manager
