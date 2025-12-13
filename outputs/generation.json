@@ -1,0 +1,50 @@
+{
+  "prompt": "A test prompt for video generation",
+  "generation_time": 7.581710815429688e-05,
+  "config": {
+    "model": {
+      "model_path": "",
+      "model_name": "",
+      "precision": "Q5",
+      "device": "auto",
+      "gpu_id": null,
+      "context_length": 2048,
+      "max_tokens": 512
+    },
+    "output": {
+      "output_dir": "./outputs",
+      "video_format": "mp4",
+      "fps": 30,
+      "width": 1024,
+      "height": 576,
+      "quality": "high",
+      "compression": "medium"
+    },
+    "pipeline": {
+      "batch_size": 1,
+      "num_workers": 4,
+      "prefetch_factor": 2,
+      "pin_memory": true,
+      "persistent_workers": false,
+      "timeout": 30
+    },
+    "logging": {
+      "level": "INFO",
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+      "file_logging": false,
+      "log_file": "./logs/wanvidgen.log",
+      "console_logging": true
+    },
+    "debug": false,
+    "gui_enabled": true,
+    "env_file": null
+  },
+  "result": {
+    "status": "success",
+    "prompt": "A test prompt for video generation",
+    "pipeline": "placeholder",
+    "generated_frames": [],
+    "output_path": null,
+    "generation_time": 0.0
+  }
+}
