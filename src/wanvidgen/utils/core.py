@@ -1,7 +1,8 @@
 """
-Utility functions for WanVidGen.
+Core utility functions for WanVidGen.
 
-Placeholder module for common utility functions.
+Common utility functions for system information, dependency checking,
+and other shared functionality.
 """
 
 import logging

@@ -1,6 +1,6 @@
 {
-  "prompt": "A test prompt for video generation",
-  "generation_time": 7.581710815429688e-05,
+  "prompt": "A cat playing piano",
+  "generation_time": 0.000598907470703125,
   "config": {
     "model": {
       "model_path": "",
@@ -41,7 +41,7 @@
   },
   "result": {
     "status": "success",
-    "prompt": "A test prompt for video generation",
+    "prompt": "A cat playing piano",
     "pipeline": "placeholder",
     "generated_frames": [],
     "output_path": null,
