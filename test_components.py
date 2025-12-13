@@ -17,14 +17,14 @@ def test_imports():
     print("Testing imports...")
     
     try:
-        from wanvidgen.config.config import Config
+        from wanvidgen.config import Config
         print("✅ Config import successful")
     except Exception as e:
         print(f"❌ Config import failed: {e}")
         return False
     
     try:
-        from wanvidgen.pipeline.pipeline import GenerationPipeline
+        from wanvidgen.pipeline import GenerationPipeline
         print("✅ GenerationPipeline import successful")
     except Exception as e:
         print(f"❌ GenerationPipeline import failed: {e}")
@@ -44,7 +44,7 @@ def test_config():
     print("\nTesting configuration...")
     
     try:
-        from wanvidgen.config.config import Config
+        from wanvidgen.config import Config
         config = Config("test_config.json")
         
         # Test default values
@@ -82,7 +82,7 @@ def test_pipeline():
     print("\nTesting generation pipeline...")
     
     try:
-        from wanvidgen.pipeline.pipeline import GenerationPipeline
+        from wanvidgen.pipeline import GenerationPipeline
         pipeline = GenerationPipeline()
         
         # Test status
