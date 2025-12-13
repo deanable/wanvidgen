@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wanvidgen"
+version = "0.1.0"
+description = "Video generation pipeline with CLIP, VAE, and UNet support"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "WanVidGen Contributors"}
+]
+dependencies = [
+    "torch>=1.9.0",
+    "numpy>=1.19.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.12.1",
+    "black>=21.0",
+    "isort>=5.0",
+    "flake8>=3.9.0",
+    "mypy>=0.900",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+skip_gitignore = true
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
