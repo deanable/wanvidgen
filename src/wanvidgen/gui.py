@@ -214,10 +214,18 @@ class WanVidGenApp:
             
             if result.get("status") == "success":
                 self.log("Generation completed successfully!")
-                if self.output_manager:
-                    filename = f"gen_{int(time.time())}.json"
-                    self.output_manager.save_json(result, filename, result)
-                    self.log(f"Saved metadata to {filename}")
+                # Save output using handlers
+                if "frames" in result:
+                    from pathlib import Path
+                    from .output.handlers import save_generation
+                    output_dir = Path(self.config.output.output_dir) / f"gen_{int(time.time())}"
+                    saved_files = save_generation(
+                        frames=result["frames"],
+                        metadata=result,
+                        output_dir=output_dir,
+                        fps=self.config.output.fps
+                    )
+                    self.log(f"Saved to {output_dir}")
             else:
                 self.log(f"Generation failed: {result.get('error', 'Unknown error')}")
                 
@@ -244,11 +252,10 @@ class WanVidGenApp:
 
 class SimpleGUIManager:
     """Simple GUI manager placeholder."""
-    
-    def __init__(self, config_manager=None, pipeline=None, output_manager=None):
+
+    def __init__(self, config_manager=None, pipeline=None):
         self.config_manager = config_manager
         self.pipeline = pipeline
-        self.output_manager = output_manager
         self.app = None
         
     def start(self) -> bool:
@@ -258,7 +265,7 @@ class SimpleGUIManager:
             return False
         
         try:
-            self.app = WanVidGenApp(self.config_manager, self.pipeline, self.output_manager)
+            self.app = WanVidGenApp(self.config_manager, self.pipeline, None)
             self.app.run()
             return True
         except Exception as e:
@@ -266,6 +273,6 @@ class SimpleGUIManager:
             return False
 
 
-def create_gui_manager(config_manager=None, pipeline=None, output_manager=None):
+def create_gui_manager(config_manager=None, pipeline=None):
     """Create GUI manager instance."""
-    return SimpleGUIManager(config_manager, pipeline, output_manager)
+    return SimpleGUIManager(config_manager, pipeline)

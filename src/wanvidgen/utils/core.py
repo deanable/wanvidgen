@@ -16,13 +16,20 @@ logger = logging.getLogger(__name__)
 
 def get_system_info() -> Dict[str, Any]:
     """Get basic system information."""
-    return {
+    info: Dict[str, Any] = {
         "platform": platform.platform(),
         "system": platform.system(),
+        "os_release": platform.release(),
         "machine": platform.machine(),
         "python_version": platform.python_version(),
         "processor": platform.processor(),
     }
+    try:
+        import psutil  # type: ignore
+        info["ram_total_gb"] = round(psutil.virtual_memory().total / (1024**3), 2)
+    except ImportError:
+        info["ram_total_gb"] = "Unknown (psutil not installed)"
+    return info
 
 
 def detect_gpu_device() -> Optional[Dict[str, Any]]:
@@ -36,16 +43,26 @@ def select_optimal_device(preferred_device: str = "auto") -> str:
 
 
 def check_dependencies() -> Dict[str, bool]:
-    """Check if dependencies are available (placeholder)."""
-    # This is a stub - would normally check for torch, customtkinter, etc.
-    return {
-        "torch": True,  # Placeholder
-        "customtkinter": True,  # Placeholder
-        "python-dotenv": True,  # Placeholder
-        "moviepy": True,  # Placeholder
-        "imageio": True,  # Placeholder
-        "pillow": True,  # Placeholder
+    """Check if dependencies are available."""
+    dependencies = {
+        "torch": False,
+        "numpy": False,
+        "PIL": False,  # Pillow
+        "customtkinter": False,
+        "dotenv": False,  # python-dotenv
+        "moviepy": False,
+        "imageio": False,
+        "huggingface_hub": False,
     }
+
+    for dep in dependencies:
+        try:
+            __import__(dep)
+            dependencies[dep] = True
+        except ImportError:
+            dependencies[dep] = False
+
+    return dependencies
 
 
 def setup_logging(config: Dict[str, Any]) -> None:

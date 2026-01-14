@@ -19,9 +19,12 @@ from typing import Any, Literal
 import numpy as np
 from PIL import Image
 
-from ..logging import get_logger
-
-logger = get_logger(__name__)
+try:
+    from ..log_config import get_logger
+    logger = get_logger(__name__)
+except ImportError:
+    import logging
+    logger = logging.getLogger(__name__)
 
 VideoFormat = Literal["mp4", "webm"]
 

@@ -1,5 +1,7 @@
 """
 Utility functions for WanVidGen.
+
+This module re-exports utilities from the utils package for backward compatibility.
 """
 
 import os
@@ -9,41 +11,21 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+# Re-export from utils package
+from .utils.core import (
+    get_system_info,
+    check_dependencies,
+    format_file_size,
+    sanitize_filename,
+)
+from .utils.memory import (
+    torch_available,
+    cuda_available,
+    mps_available,
+    best_device,
+)
+
 logger = logging.getLogger(__name__)
-
-def get_system_info() -> Dict[str, Any]:
-    """Get system information."""
-    info: Dict[str, Any] = {
-        "os": platform.system(),
-        "os_release": platform.release(),
-        "python_version": sys.version.split()[0],
-        "processor": platform.processor(),
-    }
-    try:
-        import psutil  # type: ignore
-        info["ram_total_gb"] = round(psutil.virtual_memory().total / (1024**3), 2)
-    except ImportError:
-        info["ram_total_gb"] = "Unknown (psutil not installed)"
-        
-    return info
-
-def check_dependencies() -> Dict[str, bool]:
-    """Check for required dependencies."""
-    dependencies = {
-        "torch": False,
-        "numpy": False,
-        "PIL": False,  # Pillow
-        "huggingface_hub": False,
-    }
-    
-    for dep in dependencies:
-        try:
-            __import__(dep)
-            dependencies[dep] = True
-        except ImportError:
-            dependencies[dep] = False
-            
-    return dependencies
 
 def ensure_model_availability(config) -> bool:
     """

@@ -19,10 +19,10 @@ if __name__ == "__main__" and __package__ is None:
 
 from .config import Config, load_config
 from .utils import get_system_info, check_dependencies, ensure_model_availability
-from .logging import configure_logging, LogConfig
+from .log_config import configure_logging, LogConfig
 from .gui import create_gui_manager
 from .pipeline import create_default_pipeline
-from .outputs import create_output_manager
+from .output.handlers import save_generation
 from .models import create_model_manager
 
 
@@ -129,9 +129,8 @@ def generate_video(prompt: str, config: Config, output_name: Optional[str] = Non
         print(f"  Resolution: {config.output.width}x{config.output.height}")
         print(f"  FPS: {config.output.fps}")
         print()
-        
+
         # Create components
-        output_manager = create_output_manager(config.output.output_dir)
         model_manager = create_model_manager(config.model.__dict__)
         pipeline = create_default_pipeline(config.output.__dict__, model_manager)
         
@@ -164,7 +163,6 @@ def generate_video(prompt: str, config: Config, output_name: Optional[str] = Non
             
             # Save video if frames are present
             if "frames" in result:
-                from .output.handlers import save_generation
                 saved_files = save_generation(
                     frames=result["frames"],
                     metadata=metadata,
@@ -172,10 +170,7 @@ def generate_video(prompt: str, config: Config, output_name: Optional[str] = Non
                     fps=config.output.fps
                 )
                 print(f"✓ Video saved to: {saved_files.get('mp4', saved_files.get('png'))}")
-            
-            output_info = output_manager.save_json(metadata, f"{output_name or 'generation'}.json", metadata)
-            print(f"✓ Generation completed in {generation_time:.2f} seconds")
-            print(f"Output saved to: {output_info['filepath']}")
+                print(f"✓ Generation completed in {generation_time:.2f} seconds")
         
         # Cleanup
         model_manager.unload_model()
@@ -194,12 +189,11 @@ def start_gui(config: Config) -> bool:
         print("Starting GUI application...")
         
         # Create components
-        output_manager = create_output_manager(config.output.output_dir)
         model_manager = create_model_manager(config.model.__dict__)
         pipeline = create_default_pipeline(config.output.__dict__, model_manager)
-        
+
         # Create and start GUI
-        gui_manager = create_gui_manager(config, pipeline, output_manager)
+        gui_manager = create_gui_manager(config, pipeline)
         if gui_manager is None:
             print("✗ GUI not available")
             return False
